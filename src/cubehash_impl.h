@@ -23,6 +23,7 @@
 
 #include "types.h"
 
+#include <cassert>
 #include <stdint.h>
 
 #define ROT(a,b,n) (((a) << (b)) | ((a) >> (n - b)))
@@ -99,6 +100,13 @@ public:
 	void process_final_incomplete_block (const byte*data, int n) {
 
 		int i;
+		if (data == NULL && n == 0) {
+			//empty block, finalize
+			X[31] ^= 1;
+			rounds (F);
+			return;
+		}
+		assert(data != NULL && n != 0);  // if only one is NULL/0, it's a bug
 
 		for (i = 0; i + 4 <= n; i += 4)
 #if __BYTE_ORDER__==__ORDER_LITTLE_ENDIAN__
