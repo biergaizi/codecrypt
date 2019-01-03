@@ -1,0 +1,50 @@
+language: generic
+
+dist: xenial
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "rMUkyV7hfVfnY/5sxtWc6j/UnEdyVtg7ixaMAns5g1iaLd5obuKpys4rZ9UsaOzX2ajQrF7b022Py1mfhCiR72hg5xwqREV7xnzOyXciB9LO9plwBZqJ+u3RBXhSAoHhLlnhf+v4C+FQsCy8jodVcGEeidMZgzXEf32/hUnCFd0F/yHdXbMIFuU3hjwynMNCKtmXKResWUnbgeKLyydKxDCt4+MiZDTUDTb25HjicdJiMS+y9mwUH1/NMyoj6l7pWiEYw4xxzvRK7gEvbnd8q7IR2Xlh3bpSwlqL5Pp8oCEw4Kp2lxZVoN3h9P1QI+Vn3r8LVY6wEGx4xvPnp+bWMWxvFn44Z1orN4ktrMDE3gYeGhanXDxBTeK8iAM2zaunvbPAxevnDlqzJ60NMrN05/Bj721z8OGitUIOkT8Hgu70+7IxbutCqqeyDGtOXqntUWyWX5wOC/ZmB9ZQJwfQV8YRS7eElIg1wsx73dTvBakb+56H3wEFvX2kqAFbxtFmXPHTndniajSsJPivM8dNv9H6iIh2eyIDLBghgc58jUzt6FXopVNAApd8mDWtqN8QqS9cwyMdjgLRP8E9cMfoSp97ZqJnoLcErqvO0OvgqjqwwvY835LbFc73LW4XTPuE3qEt6ths8J7rB5pp/mukHC/q22MEwsseS6jAnNVL+/A="
+
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - CC="gcc-8"
+        - CXX="g++-8"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-6.0
+          packages:
+            - clang-6.0
+      env:
+        - CC="clang-6.0"
+        - CXX="clang++-6.0"
+
+before_install:
+  - sudo apt-get install -y 'libcrypto++-dev' fftw3-dev
+  - echo -n | openssl s_client -connect scan.coverity.com:443 -servername scan.coverity.com | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "biergaizi/codecrypt"
+      description: "The post-quantum cryptography tool."
+    notification_email: biergaizi2009@gmail.com
+    build_command_prepend: "./autogen.sh && ./configure"
+    build_command: "make"
+    branch_pattern: github
+
+script: ./autogen.sh && ./configure && make 
